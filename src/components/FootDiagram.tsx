@@ -3,8 +3,17 @@ import { footPoints } from '../data/points'
 import type { FootSide } from '../data/types'
 import { FOOT_VIEWBOX_HEIGHT, FOOT_VIEWBOX_WIDTH, SOLE_PATH, TOES } from './FootOutlinePath'
 
+// 施術者がお客様の足裏と向き合う体勢を基準にした目安線(反射区チャートの慣例に合わせる)
+const GUIDE_LINES = [
+  { y: 100, label: '肩のライン' },
+  { y: 178, label: '横隔膜ライン' },
+  { y: 440, label: 'ヒップライン' },
+]
+
 interface SingleFootProps {
   side: 'left' | 'right'
+  /** true の場合、内側(親指側)が画面の右寄りに来るよう左右反転して描画する */
+  mirror: boolean
   selectedId?: string | null
   highlightIds?: Set<string>
   hasHighlights?: boolean
@@ -15,7 +24,7 @@ function matchesSide(feet: FootSide, side: 'left' | 'right') {
   return feet === 'both' || feet === side
 }
 
-function SingleFoot({ side, selectedId, highlightIds, hasHighlights, onSelect }: SingleFootProps) {
+function SingleFoot({ side, mirror, selectedId, highlightIds, hasHighlights, onSelect }: SingleFootProps) {
   const points = useMemo(() => footPoints.filter((p) => matchesSide(p.feet, side)), [side])
 
   return (
@@ -26,7 +35,7 @@ function SingleFoot({ side, selectedId, highlightIds, hasHighlights, onSelect }:
         role="img"
         aria-label={side === 'left' ? '左足の反射区チャート' : '右足の反射区チャート'}
       >
-        <g transform={side === 'left' ? `scale(-1,1) translate(${-FOOT_VIEWBOX_WIDTH},0)` : undefined}>
+        <g transform={mirror ? `scale(-1,1) translate(${-FOOT_VIEWBOX_WIDTH},0)` : undefined}>
           <path d={SOLE_PATH} className="fill-orange-50 stroke-orange-300 dark:fill-stone-700 dark:stroke-stone-500" strokeWidth={2} />
           {TOES.map((t, i) => (
             <ellipse
@@ -37,6 +46,18 @@ function SingleFoot({ side, selectedId, highlightIds, hasHighlights, onSelect }:
               ry={t.ry}
               className="fill-orange-50 stroke-orange-300 dark:fill-stone-700 dark:stroke-stone-500"
               strokeWidth={2}
+            />
+          ))}
+          {GUIDE_LINES.map((g) => (
+            <line
+              key={g.label}
+              x1={8}
+              y1={g.y}
+              x2={FOOT_VIEWBOX_WIDTH - 8}
+              y2={g.y}
+              className="stroke-orange-300/70 dark:stroke-stone-400/50"
+              strokeWidth={1}
+              strokeDasharray="4 4"
             />
           ))}
           {points.map((p) => {
@@ -81,12 +102,14 @@ interface FootDiagramProps {
   onSelect: (id: string) => void
 }
 
+// 施術者がお客様と向き合って足裏を見る一般的なチャートの並びに合わせ、
+// お客様の右足を画面左側、左足を画面右側に配置する。
 export function FootDiagram({ selectedId, highlightIds, onSelect }: FootDiagramProps) {
   const hasHighlights = !!highlightIds && highlightIds.size > 0
   return (
     <div className="flex items-start justify-center gap-4 sm:gap-8">
-      <SingleFoot side="left" selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
-      <SingleFoot side="right" selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
+      <SingleFoot side="right" mirror selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
+      <SingleFoot side="left" mirror={false} selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
     </div>
   )
 }
