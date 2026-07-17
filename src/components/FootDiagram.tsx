@@ -1,0 +1,92 @@
+import { useMemo } from 'react'
+import { footPoints } from '../data/points'
+import type { FootSide } from '../data/types'
+import { FOOT_VIEWBOX_HEIGHT, FOOT_VIEWBOX_WIDTH, SOLE_PATH, TOES } from './FootOutlinePath'
+
+interface SingleFootProps {
+  side: 'left' | 'right'
+  selectedId?: string | null
+  highlightIds?: Set<string>
+  hasHighlights?: boolean
+  onSelect: (id: string) => void
+}
+
+function matchesSide(feet: FootSide, side: 'left' | 'right') {
+  return feet === 'both' || feet === side
+}
+
+function SingleFoot({ side, selectedId, highlightIds, hasHighlights, onSelect }: SingleFootProps) {
+  const points = useMemo(() => footPoints.filter((p) => matchesSide(p.feet, side)), [side])
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <svg
+        viewBox={`0 0 ${FOOT_VIEWBOX_WIDTH} ${FOOT_VIEWBOX_HEIGHT}`}
+        className="h-auto w-full max-w-[220px] drop-shadow-sm"
+        role="img"
+        aria-label={side === 'left' ? '左足の反射区チャート' : '右足の反射区チャート'}
+      >
+        <g transform={side === 'left' ? `scale(-1,1) translate(${-FOOT_VIEWBOX_WIDTH},0)` : undefined}>
+          <path d={SOLE_PATH} className="fill-orange-50 stroke-orange-300 dark:fill-stone-700 dark:stroke-stone-500" strokeWidth={2} />
+          {TOES.map((t, i) => (
+            <ellipse
+              key={i}
+              cx={t.cx}
+              cy={t.cy}
+              rx={t.rx}
+              ry={t.ry}
+              className="fill-orange-50 stroke-orange-300 dark:fill-stone-700 dark:stroke-stone-500"
+              strokeWidth={2}
+            />
+          ))}
+          {points.map((p) => {
+            const isSelected = selectedId === p.id
+            const isHighlighted = highlightIds?.has(p.id) ?? false
+            const isDimmed = hasHighlights && !isHighlighted && !isSelected
+            return (
+              <circle
+                key={p.id}
+                cx={p.x}
+                cy={p.y}
+                r={isSelected ? p.radius + 3 : p.radius}
+                onClick={() => onSelect(p.id)}
+                className={
+                  'cursor-pointer transition-all ' +
+                  (isSelected
+                    ? 'fill-teal-500/80 stroke-teal-700 dark:stroke-teal-200'
+                    : isHighlighted
+                      ? 'fill-amber-400/80 stroke-amber-600 animate-pulse dark:stroke-amber-200'
+                      : isDimmed
+                        ? 'fill-stone-300/40 stroke-stone-300/60 dark:fill-stone-500/20 dark:stroke-stone-500/30'
+                        : 'fill-teal-400/40 stroke-teal-500/70 hover:fill-teal-400/70 dark:fill-teal-300/30 dark:stroke-teal-300/60')
+                }
+                strokeWidth={isSelected ? 3 : 2}
+              >
+                <title>{p.name}</title>
+              </circle>
+            )
+          })}
+        </g>
+      </svg>
+      <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
+        {side === 'left' ? '左足' : '右足'}
+      </span>
+    </div>
+  )
+}
+
+interface FootDiagramProps {
+  selectedId?: string | null
+  highlightIds?: Set<string>
+  onSelect: (id: string) => void
+}
+
+export function FootDiagram({ selectedId, highlightIds, onSelect }: FootDiagramProps) {
+  const hasHighlights = !!highlightIds && highlightIds.size > 0
+  return (
+    <div className="flex items-start justify-center gap-4 sm:gap-8">
+      <SingleFoot side="left" selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
+      <SingleFoot side="right" selectedId={selectedId} highlightIds={highlightIds} hasHighlights={hasHighlights} onSelect={onSelect} />
+    </div>
+  )
+}
