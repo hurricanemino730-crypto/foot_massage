@@ -14,7 +14,7 @@ export const SOLE_PATH =
   'C209,320 207,270 204,215 ' + // 外側: 土踏まずはほぼ直線的
   'C201,175 194,145 183,122 ' + // 外側: 小指球のふくらみ
   'C177,100 179,75 178,55 ' + // 小指の付け根まで立ち上がる
-  'C150,44 90,42 45,52 Z' // 指の付け根のライン(5本の指の下を通るリッジ)
+  'C168,48 90,42 45,52 Z' // 指の付け根のライン(5本の指の下を通るリッジ)
 
 export interface ToeSpec {
   cx: number
@@ -25,11 +25,11 @@ export interface ToeSpec {
 
 // 親指が最も長く太く、小指に向かって短く細くなる自然な傾斜をつけている
 export const TOES: ToeSpec[] = [
-  { cx: 48, cy: 26, rx: 25, ry: 22 },
-  { cx: 98, cy: 33, rx: 14, ry: 17 },
-  { cx: 128, cy: 35, rx: 13, ry: 15 },
-  { cx: 155, cy: 37, rx: 11, ry: 13 },
-  { cx: 178, cy: 41, rx: 10, ry: 11 },
+  { cx: 48, cy: 24, rx: 26, ry: 24 },
+  { cx: 100, cy: 30, rx: 15, ry: 19 },
+  { cx: 130, cy: 32, rx: 14, ry: 17 },
+  { cx: 157, cy: 34, rx: 13, ry: 15 },
+  { cx: 180, cy: 38, rx: 11, ry: 13 },
 ]
 
 export const FOOT_VIEWBOX_WIDTH = 220
